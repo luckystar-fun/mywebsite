@@ -10,28 +10,47 @@
 
 ## 技术栈
 
-- Flask 3.x
+- Flask
 - SQLite
 - gunicorn + systemd
 - Cloudflare Tunnel（内网穿透）
 
 ## 本地运行
 
-\`\`\`bash
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install flask gunicorn
 
 python app.py
-# 访问 http://localhost:5000
-\`\`\`
+```
+
+访问 http://localhost:5000
 
 ## 部署
 
 服务由 systemd 管理：
 
-\`\`\`bash
+```bash
 sudo systemctl status mywebsite
 sudo systemctl restart mywebsite
-journalctl -u mywebsite -f
-\`\`\`
+sudo journalctl -u mywebsite -f
+```
+
+## 项目结构
+
+```
+mywebsite/
+├── app.py
+├── templates/
+│   ├── base.html
+│   └── index.html
+├── static/
+│   └── style.css
+└── requirements.txt
+```
+
+## 说明
+
+- 数据库文件 `messages.db` 不入版本库
+- 虚拟环境 `venv/` 不入版本库
