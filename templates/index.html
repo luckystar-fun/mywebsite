@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}留言板 - 第 {{ page }} 页{% endblock %}
+
+{% block content %}
+
+<form method="post" action="{{ url_for('post') }}" class="post-form">
+    <input type="text" name="name" placeholder="你的名字" maxlength="20" required>
+    <textarea name="content" placeholder="说点什么吧……" maxlength="500" required></textarea>
+    <button type="submit">发布留言</button>
+</form>
+
+<div class="messages">
+    <p class="count">共 {{ total }} 条留言 · 第 {{ page }} / {{ total_pages }} 页</p>
+
+    {% for msg in messages %}
+    <div class="message">
+        <div class="meta">
+            <span class="name">{{ msg['name'] }}</span>
+            <span class="right">
+                <span class="time">{{ msg['created_at'] }}</span>
+                <form method="post"
+                      action="{{ url_for('delete', msg_id=msg['id'], page=page) }}"
+                      class="inline-form"
+                      onsubmit="return confirm('确定删除这条留言吗？');">
+                    <button type="submit" class="del-btn" title="删除">✕</button>
+                </form>
+            </span>
+        </div>
+        <div class="content">{{ msg['content'] }}</div>
+    </div>
+    {% else %}
+        <p class="empty">还没有留言，来做第一个吧 ~</p>
+    {% endfor %}
+
+    {% if total_pages > 1 %}
+    <nav class="pager">
+        {% if page > 1 %}
+            <a href="{{ url_for('index', page=page-1) }}">← 上一页</a>
+        {% else %}
+            <span class="disabled">← 上一页</span>
+        {% endif %}
+
+        <span class="page-info">{{ page }} / {{ total_pages }}</span>
+
+        {% if page < total_pages %}
+            <a href="{{ url_for('index', page=page+1) }}">下一页 →</a>
+        {% else %}
+            <span class="disabled">下一页 →</span>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+
+{% endblock %}

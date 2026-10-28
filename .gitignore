@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+
+# 数据库（含真实数据）
+messages.db
+*.db
+
+# 隧道工具二进制
+cloudflared-linux-amd64
+ngrok
+
+# 日志与临时文件
+*.log
+.DS_Store
