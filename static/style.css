@@ -440,3 +440,25 @@ footer {
         transform: none !important;
     }
 }
+
+/* ===== 未登录提示 ===== */
+.login-hint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 18px 0 24px;
+}
+
+.login-hint a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.login-hint a:hover {
+    text-decoration: underline;
+}
+
+/* ===== 登录/注册页底部链接 ===== */
+.login-box .hint a {
+    color: var(--primary);
+}

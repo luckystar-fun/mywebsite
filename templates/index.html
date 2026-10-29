@@ -5,30 +5,38 @@
 {% block content %}
 
 <div class="admin-bar">
-    {% if session.get('logged_in') %}
-        <span class="admin-tag">已登录为管理员</span>
+    {% if session.get('user_id') %}
+        <span class="admin-tag">{{ session.get('username') }}</span>
         <a href="{{ url_for('logout') }}">退出登录</a>
     {% else %}
-        <a href="{{ url_for('login') }}">管理员登录</a>
+        <a href="{{ url_for('login') }}">登录</a>
+        <a href="{{ url_for('register') }}">注册</a>
     {% endif %}
 </div>
 
+{% if session.get('user_id') %}
 <form method="post" action="{{ url_for('post') }}" class="post-form">
-    <input type="text" name="name" placeholder="你的名字" maxlength="20" required>
     <textarea name="content" placeholder="说点什么吧……" maxlength="500" required></textarea>
     <button type="submit">发布留言</button>
 </form>
+{% else %}
+<p class="login-hint">
+    <a href="{{ url_for('login') }}">登录</a> 后即可发布留言
+</p>
+{% endif %}
 
 <div class="messages">
     <p class="count">共 {{ total }} 条留言 · 第 {{ page }} / {{ total_pages }} 页</p>
 
+    {% set uid = session.get('user_id') %}
+
     {% for msg in messages %}
-    <div class="message" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+    <div class="message">
         <div class="meta">
             <span class="name">{{ msg['name'] }}</span>
             <span class="right">
                 <span class="time">{{ msg['created_at'] }}</span>
-                {% if session.get('logged_in') %}
+                {% if uid and (msg['user_id'] == uid or msg['user_id'] is none) %}
                 <form method="post"
                       action="{{ url_for('delete', msg_id=msg['id'], page=page) }}"
                       class="inline-form"
