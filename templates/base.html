@@ -4,12 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}我的留言板{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- 防闪烁 + 主题初始化（localStorage 失败时用 cookie 兜底） -->
+    <script>
+        (function () {
+            function loadTheme() {
+                try {
+                    var v = localStorage.getItem('theme');
+                    if (v === 'dark' || v === 'light') return v;
+                } catch (e) {}
+                var m = document.cookie.match(/(?:^|;\s*)theme=(dark|light)/);
+                return m ? m[1] : null;
+            }
+
+            var t = loadTheme();
+            if (!t) {
+                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>{% block heading %}留言板{% endblock %}</h1>
+            <button id="theme-toggle" class="theme-toggle" title="切换主题">🌙</button>
         </header>
 
         <main>
@@ -17,8 +39,10 @@
         </main>
 
         <footer>
-            <p>Python + Flask + SQLite · 运行在我的 Ubuntu 虚拟机里面</p>
+            <p>Python + Flask + SQLite · 运行在我的 Ubuntu 虚拟机里</p>
         </footer>
     </div>
+
+    <script src="{{ url_for('static', filename='theme.js') }}?v=3"></script>
 </body>
 </html>

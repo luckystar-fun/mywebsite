@@ -23,7 +23,7 @@
     <p class="count">共 {{ total }} 条留言 · 第 {{ page }} / {{ total_pages }} 页</p>
 
     {% for msg in messages %}
-    <div class="message">
+    <div class="message" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
         <div class="meta">
             <span class="name">{{ msg['name'] }}</span>
             <span class="right">
