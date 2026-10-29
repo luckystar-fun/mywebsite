@@ -4,6 +4,15 @@
 
 {% block content %}
 
+<div class="admin-bar">
+    {% if session.get('logged_in') %}
+        <span class="admin-tag">已登录为管理员</span>
+        <a href="{{ url_for('logout') }}">退出登录</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">管理员登录</a>
+    {% endif %}
+</div>
+
 <form method="post" action="{{ url_for('post') }}" class="post-form">
     <input type="text" name="name" placeholder="你的名字" maxlength="20" required>
     <textarea name="content" placeholder="说点什么吧……" maxlength="500" required></textarea>
@@ -19,12 +28,14 @@
             <span class="name">{{ msg['name'] }}</span>
             <span class="right">
                 <span class="time">{{ msg['created_at'] }}</span>
+                {% if session.get('logged_in') %}
                 <form method="post"
                       action="{{ url_for('delete', msg_id=msg['id'], page=page) }}"
                       class="inline-form"
                       onsubmit="return confirm('确定删除这条留言吗？');">
                     <button type="submit" class="del-btn" title="删除">✕</button>
                 </form>
+                {% endif %}
             </span>
         </div>
         <div class="content">{{ msg['content'] }}</div>

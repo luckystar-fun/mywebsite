@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - 留言板{% endblock %}
+
+{% block content %}
+
+<div class="login-box">
+    <h2>管理员登录</h2>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('login') }}">
+        <input type="password" name="password" placeholder="请输入管理密码" required autofocus>
+        <button type="submit">登录</button>
+    </form>
+
+    <p class="hint">
+        <a href="{{ url_for('index') }}">← 返回留言板</a>
+    </p>
+</div>
+
+{% endblock %}

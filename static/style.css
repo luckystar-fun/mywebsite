@@ -175,3 +175,94 @@ footer {
 .page-info {
     color: #888;
 }
+
+/* ===== 管理栏 ===== */
+.admin-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+
+.admin-bar a {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+.admin-bar a:hover {
+    text-decoration: underline;
+}
+
+.admin-tag {
+    background: #e8f0fe;
+    color: #1a73e8;
+    padding: 3px 10px;
+    border-radius: 12px;
+}
+
+/* ===== 登录页 ===== */
+.login-box {
+    background: #fff;
+    padding: 30px 26px;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .08);
+    max-width: 380px;
+    margin: 40px auto;
+}
+
+.login-box h2 {
+    margin: 0 0 20px;
+    font-size: 20px;
+    color: #333;
+}
+
+.login-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.login-box input {
+    padding: 10px 12px;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+}
+
+.login-box input:focus {
+    border-color: #1a73e8;
+}
+
+.login-box button {
+    padding: 10px;
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.login-box button:hover {
+    background: #1557b0;
+}
+
+.login-box .error {
+    color: #e53935;
+    font-size: 14px;
+    margin: 0 0 14px;
+}
+
+.login-box .hint {
+    text-align: center;
+    margin: 18px 0 0;
+    font-size: 13px;
+}
+
+.login-box .hint a {
+    color: #888;
+    text-decoration: none;
+}
