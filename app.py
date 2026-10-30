@@ -51,7 +51,7 @@ app.logger.info("SECRET_KEY 指纹: %s",
 # ============================================================
 # 配置
 # ============================================================
-DB = os.path.join(BASE_DIR, "messages.db")
+DB = os.environ.get("DB_PATH", os.path.join(BASE_DIR, "messages.db"))
 PER_PAGE = 5
 
 
