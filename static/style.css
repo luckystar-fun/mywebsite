@@ -12,6 +12,8 @@
     --tag-bg: #e8f0fe;
     --shadow: 0 1px 4px rgba(0, 0, 0, .08);
     --shadow-hover: 0 4px 14px rgba(0, 0, 0, .1);
+    --mark-bg: #fff3a3;
+    --mark-fg: #7a5c00;
 }
 
 [data-theme="dark"] {
@@ -26,6 +28,8 @@
     --tag-bg: #23324a;
     --shadow: 0 1px 6px rgba(0, 0, 0, .45);
     --shadow-hover: 0 4px 16px rgba(0, 0, 0, .55);
+    --mark-bg: #6b5c00;
+    --mark-fg: #ffe98a;
 }
 
 /* ========== 基础 ========== */
@@ -528,4 +532,13 @@ footer {
     .search-form input {
         min-width: 100%;
     }
+}
+
+/* ===== 搜索高亮 ===== */
+mark {
+    background: var(--mark-bg);
+    color: var(--mark-fg);
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: inherit;
 }

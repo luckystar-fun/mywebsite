@@ -49,7 +49,7 @@
     {% for msg in messages %}
     <div class="message">
         <div class="meta">
-            <span class="name">{{ msg['name'] }}</span>
+            <span class="name">{{ msg['name']|hl(q) }}</span>
             <span class="right">
                 <span class="time">{{ msg['created_at'] }}</span>
                 {% if uid and (msg['user_id'] == uid or msg['user_id'] is none) %}
@@ -62,7 +62,7 @@
                 {% endif %}
             </span>
         </div>
-        <div class="content">{{ msg['content'] }}</div>
+        <div class="content">{{ msg['content']|hl(q) }}</div>
     </div>
     {% else %}
         {% if q %}

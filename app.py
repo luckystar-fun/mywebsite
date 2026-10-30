@@ -1,3 +1,5 @@
+import re
+from markupsafe import Markup, escape
 import sqlite3
 from datetime import datetime
 from flask import (Flask, render_template, request, redirect,
@@ -62,6 +64,32 @@ def like_pattern(keyword):
     """转义 LIKE 的特殊字符，防止用户输入 % 或 _ 造成意外匹配"""
     keyword = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{keyword}%"
+
+def highlight(text, keyword):
+    """安全高亮：先把 HTML 转义，再插入 <mark> 标签"""
+    # ① 原文全部转义，这一步之后内容不再有危险性
+    escaped_text = str(escape(text))
+
+    if not keyword:
+        return Markup(escaped_text)
+
+    # ② 关键词也要转义，否则搜 & < 这类字符会匹配不上
+    escaped_kw = str(escape(keyword))
+
+    # ③ 在已转义文本上做大小写不敏感的替换
+    marked = re.sub(
+        f"({re.escape(escaped_kw)})",
+        r"<mark>\1</mark>",
+        escaped_text,
+        flags=re.IGNORECASE,
+    )
+
+    # ④ 明确告诉 Jinja：这段可以按 HTML 渲染
+    return Markup(marked)
+
+@app.template_filter("hl")
+def hl_filter(text, keyword):
+    return highlight(text, keyword)
 
 @app.route("/")
 def index():
