@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误{% endblock %}
+{% block heading %}500{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <p class="code">500</p>
+    <p class="desc">服务器出了点问题，已经记录到日志。请稍后再试。</p>
+    <p><a class="back" href="{{ url_for('index') }}">← 返回留言板</a></p>
+</div>
+{% endblock %}

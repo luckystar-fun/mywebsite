@@ -542,3 +542,32 @@ mark {
     border-radius: 2px;
     font-weight: inherit;
 }
+
+/* ===== 错误页 ===== */
+.error-page {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.error-page .code {
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0 0 10px;
+    line-height: 1;
+}
+
+.error-page .desc {
+    color: var(--text-muted);
+    margin: 0 0 24px;
+}
+
+.error-page .back {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.error-page .back:hover {
+    text-decoration: underline;
+}

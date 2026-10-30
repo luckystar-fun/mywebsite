@@ -1,21 +1,63 @@
+import os
 import re
-from markupsafe import Markup, escape
 import sqlite3
+import logging
+import hashlib
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
+
 from flask import (Flask, render_template, request, redirect,
                    url_for, session, abort)
+from markupsafe import Markup, escape
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
+# ============================================================
+# 应用初始化
+# ============================================================
 app = Flask(__name__)
 
-app.secret_key = "c9f1e8a7b2d4f6a3e5c8b1d7f9a2e4c6"
+# 密钥只从环境变量读，绝不硬编码
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-insecure-key-change-me")
 
-DB = "messages.db"
+if app.secret_key.startswith("dev-only"):
+    app.logger.warning("⚠️ 正在使用开发默认 SECRET_KEY，生产环境必须设置环境变量 SECRET_KEY")
+
+
+# ============================================================
+# 日志
+# ============================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+log_handler = RotatingFileHandler(
+    os.path.join(LOG_DIR, "app.log"),
+    maxBytes=1024 * 1024,
+    backupCount=5,
+    encoding="utf-8",
+)
+log_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+log_handler.setLevel(logging.INFO)
+
+app.logger.addHandler(log_handler)
+app.logger.setLevel(logging.INFO)
+
+# 启动时打一次密钥指纹（只打印 8 位哈希，不泄露密钥）
+app.logger.info("SECRET_KEY 指纹: %s",
+                hashlib.sha256(app.secret_key.encode()).hexdigest()[:8])
+
+
+# ============================================================
+# 配置
+# ============================================================
+DB = os.path.join(BASE_DIR, "messages.db")
 PER_PAGE = 5
 
 
-# ---------- 数据库 ----------
-
+# ============================================================
+# 数据库
+# ============================================================
 def init_db():
     conn = sqlite3.connect(DB)
 
@@ -53,44 +95,44 @@ def get_db():
     return conn
 
 
-# ---------- 工具 ----------
-
+# ============================================================
+# 工具函数
+# ============================================================
 def current_user_id():
     return session.get("user_id")
 
 
-# ---------- 页面 ----------
 def like_pattern(keyword):
-    """转义 LIKE 的特殊字符，防止用户输入 % 或 _ 造成意外匹配"""
+    """转义 LIKE 的特殊字符，防止输入 % 或 _ 造成意外匹配"""
     keyword = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{keyword}%"
 
+
 def highlight(text, keyword):
     """安全高亮：先把 HTML 转义，再插入 <mark> 标签"""
-    # ① 原文全部转义，这一步之后内容不再有危险性
     escaped_text = str(escape(text))
 
     if not keyword:
         return Markup(escaped_text)
 
-    # ② 关键词也要转义，否则搜 & < 这类字符会匹配不上
     escaped_kw = str(escape(keyword))
-
-    # ③ 在已转义文本上做大小写不敏感的替换
     marked = re.sub(
         f"({re.escape(escaped_kw)})",
         r"<mark>\1</mark>",
         escaped_text,
         flags=re.IGNORECASE,
     )
-
-    # ④ 明确告诉 Jinja：这段可以按 HTML 渲染
     return Markup(marked)
+
 
 @app.template_filter("hl")
 def hl_filter(text, keyword):
     return highlight(text, keyword)
 
+
+# ============================================================
+# 页面
+# ============================================================
 @app.route("/")
 def index():
     # 页码
@@ -104,7 +146,7 @@ def index():
     # 搜索关键词
     q = request.args.get("q", "").strip()
 
-    # 动态拼 WHERE 条件
+    # 动态拼 WHERE
     where = ""
     params = []
     if q:
@@ -114,7 +156,6 @@ def index():
 
     conn = get_db()
 
-    # 总条数（带搜索条件）
     total = conn.execute(
         f"SELECT COUNT(*) FROM messages {where}", params
     ).fetchone()[0]
@@ -158,6 +199,7 @@ def post():
         )
         conn.commit()
         conn.close()
+        app.logger.info("发布留言: user=%s id=%s", session.get("username"), uid)
 
     return redirect(url_for("index"))
 
@@ -184,13 +226,16 @@ def delete(msg_id):
     conn.commit()
     conn.close()
 
+    app.logger.info("删除留言: user=%s msg_id=%s", session.get("username"), msg_id)
+
     page = request.args.get("page", 1)
     q = request.args.get("q", "").strip()
     return redirect(url_for("index", page=page, q=q or None))
 
 
-# ---------- 用户 ----------
-
+# ============================================================
+# 用户
+# ============================================================
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
@@ -225,6 +270,7 @@ def register():
                 )
                 conn.commit()
                 conn.close()
+                app.logger.info("新用户注册: %s", username)
                 return redirect(url_for("login"))
 
     return render_template("register.html", error=error)
@@ -247,8 +293,10 @@ def login():
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
             session["username"] = user["username"]
+            app.logger.info("登录成功: %s (id=%s)", user["username"], user["id"])
             return redirect(url_for("index"))
 
+        app.logger.warning("登录失败: 用户名=%s", username)
         error = "用户名或密码错误"
 
     return render_template("login.html", error=error)
@@ -256,11 +304,35 @@ def login():
 
 @app.route("/logout")
 def logout():
+    username = session.get("username")
     session.clear()
+    if username:
+        app.logger.info("退出登录: %s", username)
     return redirect(url_for("index"))
 
 
-# 模块被导入时（gunicorn / python app.py 都会）立即建表与迁移
+# ============================================================
+# 错误处理
+# ============================================================
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"), 403
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    app.logger.error("服务器内部错误: %s", e)
+    return render_template("500.html"), 500
+
+
+# ============================================================
+# 启动时执行（必须放在模块层，gunicorn 才能触发）
+# ============================================================
 init_db()
 
 

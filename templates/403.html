@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}没有权限{% endblock %}
+{% block heading %}403{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <p class="code">403</p>
+    <p class="desc">你没有权限执行这个操作。</p>
+    <p><a class="back" href="{{ url_for('index') }}">← 返回留言板</a></p>
+</div>
+{% endblock %}
