@@ -58,9 +58,14 @@ def current_user_id():
 
 
 # ---------- 页面 ----------
+def like_pattern(keyword):
+    """转义 LIKE 的特殊字符，防止用户输入 % 或 _ 造成意外匹配"""
+    keyword = keyword.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{keyword}%"
 
 @app.route("/")
 def index():
+    # 页码
     try:
         page = int(request.args.get("page", 1))
     except ValueError:
@@ -68,18 +73,34 @@ def index():
     if page < 1:
         page = 1
 
-    conn = get_db()
-    total = conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
+    # 搜索关键词
+    q = request.args.get("q", "").strip()
 
+    # 动态拼 WHERE 条件
+    where = ""
+    params = []
+    if q:
+        where = "WHERE content LIKE ? ESCAPE '\\' OR name LIKE ? ESCAPE '\\'"
+        pattern = like_pattern(q)
+        params = [pattern, pattern]
+
+    conn = get_db()
+
+    # 总条数（带搜索条件）
+    total = conn.execute(
+        f"SELECT COUNT(*) FROM messages {where}", params
+    ).fetchone()[0]
+
+    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
     if page > total_pages:
         page = total_pages
 
     offset = (page - 1) * PER_PAGE
     messages = conn.execute(
-        "SELECT * FROM messages ORDER BY id DESC LIMIT ? OFFSET ?",
-        (PER_PAGE, offset)
+        f"SELECT * FROM messages {where} ORDER BY id DESC LIMIT ? OFFSET ?",
+        params + [PER_PAGE, offset]
     ).fetchall()
+
     conn.close()
 
     return render_template(
@@ -88,6 +109,7 @@ def index():
         page=page,
         total_pages=total_pages,
         total=total,
+        q=q,
     )
 
 
@@ -135,7 +157,8 @@ def delete(msg_id):
     conn.close()
 
     page = request.args.get("page", 1)
-    return redirect(url_for("index", page=page))
+    q = request.args.get("q", "").strip()
+    return redirect(url_for("index", page=page, q=q or None))
 
 
 # ---------- 用户 ----------

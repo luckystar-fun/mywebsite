@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}留言板 - 第 {{ page }} 页{% endblock %}
+{% block title %}
+    {% if q %}搜索「{{ q }}」{% else %}留言板{% endif %} - 第 {{ page }} 页
+{% endblock %}
 
 {% block content %}
 
@@ -14,6 +16,15 @@
     {% endif %}
 </div>
 
+<!-- 搜索框 -->
+<form method="get" action="{{ url_for('index') }}" class="search-form">
+    <input type="text" name="q" value="{{ q }}" placeholder="搜索留言内容或用户名……" maxlength="50">
+    <button type="submit">搜索</button>
+    {% if q %}
+        <a class="clear-btn" href="{{ url_for('index') }}">清除</a>
+    {% endif %}
+</form>
+
 {% if session.get('user_id') %}
 <form method="post" action="{{ url_for('post') }}" class="post-form">
     <textarea name="content" placeholder="说点什么吧……" maxlength="500" required></textarea>
@@ -26,9 +37,14 @@
 {% endif %}
 
 <div class="messages">
-    <p class="count">共 {{ total }} 条留言 · 第 {{ page }} / {{ total_pages }} 页</p>
+    {% if q %}
+        <p class="count">搜索「{{ q }}」，找到 {{ total }} 条 · 第 {{ page }} / {{ total_pages }} 页</p>
+    {% else %}
+        <p class="count">共 {{ total }} 条留言 · 第 {{ page }} / {{ total_pages }} 页</p>
+    {% endif %}
 
     {% set uid = session.get('user_id') %}
+    {% set qq = q if q else none %}
 
     {% for msg in messages %}
     <div class="message">
@@ -38,7 +54,7 @@
                 <span class="time">{{ msg['created_at'] }}</span>
                 {% if uid and (msg['user_id'] == uid or msg['user_id'] is none) %}
                 <form method="post"
-                      action="{{ url_for('delete', msg_id=msg['id'], page=page) }}"
+                      action="{{ url_for('delete', msg_id=msg['id'], page=page, q=qq) }}"
                       class="inline-form"
                       onsubmit="return confirm('确定删除这条留言吗？');">
                     <button type="submit" class="del-btn" title="删除">✕</button>
@@ -49,13 +65,17 @@
         <div class="content">{{ msg['content'] }}</div>
     </div>
     {% else %}
-        <p class="empty">还没有留言，来做第一个吧 ~</p>
+        {% if q %}
+            <p class="empty">没有找到包含「{{ q }}」的留言</p>
+        {% else %}
+            <p class="empty">还没有留言，来做第一个吧 ~</p>
+        {% endif %}
     {% endfor %}
 
     {% if total_pages > 1 %}
     <nav class="pager">
         {% if page > 1 %}
-            <a href="{{ url_for('index', page=page-1) }}">← 上一页</a>
+            <a href="{{ url_for('index', page=page-1, q=qq) }}">← 上一页</a>
         {% else %}
             <span class="disabled">← 上一页</span>
         {% endif %}
@@ -63,7 +83,7 @@
         <span class="page-info">{{ page }} / {{ total_pages }}</span>
 
         {% if page < total_pages %}
-            <a href="{{ url_for('index', page=page+1) }}">下一页 →</a>
+            <a href="{{ url_for('index', page=page+1, q=qq) }}">下一页 →</a>
         {% else %}
             <span class="disabled">下一页 →</span>
         {% endif %}

@@ -462,3 +462,70 @@ footer {
 .login-box .hint a {
     color: var(--primary);
 }
+
+/* ===== 搜索框 ===== */
+.search-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.search-form input {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.search-form input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, .15);
+}
+
+.search-form button {
+    padding: 9px 18px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background .2s ease, transform .1s ease;
+    white-space: nowrap;
+}
+
+.search-form button:hover {
+    background: var(--primary-hover);
+}
+
+.search-form button:active {
+    transform: scale(.96);
+}
+
+.clear-btn {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.clear-btn:hover {
+    color: var(--danger);
+}
+
+@media (max-width: 600px) {
+    .search-form {
+        flex-wrap: wrap;
+    }
+
+    .search-form input {
+        min-width: 100%;
+    }
+}
